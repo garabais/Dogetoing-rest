@@ -21,6 +21,12 @@ func main() {
 		{Id: "2", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
 	}
 
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", homeHandler)
@@ -29,7 +35,7 @@ func main() {
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{
-		Addr: ":8080",
+		Addr: ":" + port,
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
