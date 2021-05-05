@@ -39,10 +39,18 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", homeHandler)
-	r.HandleFunc("/movies", moviesHandler)
-	r.HandleFunc("/games", gamesHandler)
-	r.HandleFunc("/shows", showsHandler)
-	r.HandleFunc("/movies/{id}", singleMovieHandler)
+
+	r.HandleFunc("/movies", moviesHandler).Methods("GET")
+	r.HandleFunc("/movies", addMovieHandler).Methods("POST")
+	r.HandleFunc("/movies/{id}", singleMovieHandler).Methods("GET")
+
+	r.HandleFunc("/games", gamesHandler).Methods("GET")
+	r.HandleFunc("/games", addGameHandler).Methods("POST")
+	r.HandleFunc("/games/{id}", singleGameHandler).Methods("GET")
+
+	r.HandleFunc("/shows", showsHandler).Methods("GET")
+	r.HandleFunc("/shows", addShowHandler).Methods("POST")
+	r.HandleFunc("/shows/{id}", singleShowHandler).Methods("GET")
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{
@@ -64,8 +72,8 @@ func main() {
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
-	// SIGKILL, SIGQUIT will not be caught.
-	signal.Notify(c, os.Interrupt, os.Interrupt)
+	// SIGKILL, SIGQUIT or SIGTERM will not be caught.
+	signal.Notify(c, os.Interrupt)
 
 	// Block until we receive our signal.
 	<-c
