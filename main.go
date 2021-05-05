@@ -9,17 +9,13 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-var articles []article
-
 const wait = 5 * time.Second
+var db *pgxpool.Pool
 
 func main() {
-	articles = []article{
-		{Id: "1", Title: "Hello", Desc: "Article Description", Content: "Article Content"},
-		{Id: "2", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
-	}
 
 	port := os.Getenv("PORT")
 
@@ -27,11 +23,22 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("$DATABASE_URL must be set")
+	}
+
+	var err error
+	db, err = pgxpool.Connect(context.Background(), databaseURL)
+	if err != nil {
+		log.Fatalf("Unable to connect to the database: %v\n", err)
+	}
+	defer db.Close()
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", homeHandler)
-	r.HandleFunc("/articles", allArticlesHandler)
-	r.HandleFunc("/article/{id}", singleArticleHandler)
+	r.HandleFunc("/movies", moviesHandler)
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{
@@ -45,7 +52,7 @@ func main() {
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		log.Printf("Listening in port %s", "8080")
+		log.Printf("Listening in port %s", port)
 		if err := srv.ListenAndServe(); err != nil {
 			log.Println(err)
 		}
