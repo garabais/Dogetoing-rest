@@ -13,6 +13,7 @@ import (
 )
 
 const wait = 5 * time.Second
+
 var db *pgxpool.Pool
 
 func main() {
@@ -39,6 +40,8 @@ func main() {
 
 	r.HandleFunc("/", homeHandler)
 	r.HandleFunc("/movies", moviesHandler)
+	r.HandleFunc("/games", gamesHandler)
+	r.HandleFunc("/shows", showsHandler)
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{

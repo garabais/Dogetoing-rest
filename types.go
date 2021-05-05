@@ -3,32 +3,32 @@ package main
 import "time"
 
 type user struct {
-	Id           string `json:"id"`
-	Name         string `json:"name"`
+	Id           string    `json:"id"`
+	Name         string    `json:"name"`
 	RegisterDate time.Time `json:"registerDate"`
 }
 
 type movie struct {
-	Id          int `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ImageUrl    string `json:"imageURL"`
+	Id          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
 }
 
 type game struct {
-	Id          int `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ImageUrl    string `json:"imageURL"`
+	Id          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
 }
 
 type show struct {
-	Id          int `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ImageUrl    string `json:"imageURL"`
+	Id          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
 }
 
