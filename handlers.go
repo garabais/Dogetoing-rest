@@ -170,7 +170,7 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := decoder.Decode(&t)
 	if err != nil {
-		log.Printf("Error decoding movie json\n")
+		log.Printf("Error decoding movie json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
