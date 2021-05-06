@@ -176,7 +176,7 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
 	if err != nil {
-		log.Printf("Error decoding date from json\n")
+		log.Printf("Error decoding date from json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
@@ -248,7 +248,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
 	if err != nil {
-		log.Printf("Error decoding date from json\n")
+		log.Printf("Error decoding date from json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
