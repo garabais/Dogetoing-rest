@@ -39,6 +39,7 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 		movies = append(movies, m)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
 }
 
@@ -65,6 +66,7 @@ func gamesHandler(w http.ResponseWriter, r *http.Request) {
 		games = append(games, g)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(games)
 }
 
@@ -91,6 +93,7 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 		shows = append(shows, s)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(shows)
 }
 
@@ -112,6 +115,7 @@ func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Movie query with id %v succesfull\n", key)
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(m)
 }
 
@@ -133,6 +137,7 @@ func singleGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Game query with id %v succesfull\n", key)
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(g)
 }
 
@@ -154,6 +159,7 @@ func singleShowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Show query with id %v succesfull\n", key)
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(s)
 }
 
@@ -190,6 +196,7 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(m)
 }
 
@@ -226,6 +233,7 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(g)
 }
 
@@ -262,5 +270,6 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(s)
 }
