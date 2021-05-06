@@ -20,7 +20,7 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	//select name, avg(r.score) from movie m left outer join movie_review r on (m.id = r.movie_id) group by m.id;
 	// query := "SELECT id, name, description, image_url, release_date FROM movie"
-	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) GROUP BY m.id"
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) GROUP BY m.id ORDER BY m.id"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in MovieHandler failed: %v\n", err)
@@ -48,7 +48,7 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
 func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
-	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) GROUP BY g.id"
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) GROUP BY g.id ORDER BY g.id"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in gamesHandler failed: %v\n", err)
@@ -76,7 +76,7 @@ func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
 func showsHandler(w http.ResponseWriter, r *http.Request) {
 
-	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) GROUP BY s.id"
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) GROUP BY s.id ORDER BY s.id"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in showsHandler failed: %v\n", err)
