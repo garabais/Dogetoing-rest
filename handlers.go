@@ -206,13 +206,13 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := decoder.Decode(&t)
 	if err != nil {
-		log.Printf("Error decoding game json\n")
+		log.Printf("Error decoding game json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
 	if err != nil {
-		log.Printf("Error decoding date from json\n")
+		log.Printf("Error decoding date from json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
@@ -242,7 +242,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := decoder.Decode(&t)
 	if err != nil {
-		log.Printf("Error decoding show json\n")
+		log.Printf("Error decoding show json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
