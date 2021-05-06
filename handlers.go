@@ -18,7 +18,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := db.Query(context.Background(), "SELECT id, name, description, image_url, release_date FROM movie")
+	//select name, avg(r.score) from movie m left outer join movie_review r on (m.id = r.movie_id) group by m.id;
+	// query := "SELECT id, name, description, image_url, release_date FROM movie"
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) GROUP BY m.id"
+	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in MovieHandler failed: %v\n", err)
 		http.Error(w, "Query failed", http.StatusInternalServerError)
@@ -32,7 +35,7 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; rows.Next(); i++ {
 		m := &movie{}
-		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate)
+		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -45,7 +48,8 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
 func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := db.Query(context.Background(), "SELECT id, name, description, image_url, release_date FROM game")
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) GROUP BY g.id"
+	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in gamesHandler failed: %v\n", err)
 		http.Error(w, "Query failed", http.StatusInternalServerError)
@@ -59,7 +63,7 @@ func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; rows.Next(); i++ {
 		g := &game{}
-		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate)
+		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -72,7 +76,8 @@ func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
 func showsHandler(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := db.Query(context.Background(), "SELECT id, name, description, image_url, release_date FROM show")
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) GROUP BY s.id"
+	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in showsHandler failed: %v\n", err)
 		http.Error(w, "Query failed", http.StatusInternalServerError)
@@ -86,7 +91,7 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; rows.Next(); i++ {
 		s := &show{}
-		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate)
+		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -102,7 +107,8 @@ func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 	key := vars["id"]
 
 	m := movie{}
-	err := db.QueryRow(context.Background(), "SELECT id, name, description, image_url, release_date FROM movie WHERE id = $1", key).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate)
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE m.id = $1 GROUP BY m.id"
+	err := db.QueryRow(context.Background(), query, key).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Movie query with id %v failed\n", key)
@@ -124,7 +130,8 @@ func singleGameHandler(w http.ResponseWriter, r *http.Request) {
 	key := vars["id"]
 
 	g := game{}
-	err := db.QueryRow(context.Background(), "SELECT id, name, description, image_url, release_date FROM game WHERE id = $1", key).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate)
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE g.id = $1 GROUP BY g.id"
+	err := db.QueryRow(context.Background(), query, key).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Game query with id %v failed\n", key)
@@ -146,7 +153,8 @@ func singleShowHandler(w http.ResponseWriter, r *http.Request) {
 	key := vars["id"]
 
 	s := show{}
-	err := db.QueryRow(context.Background(), "SELECT id, name, description, image_url, release_date FROM show WHERE id = $1", key).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate)
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE s.id = $1 GROUP BY s.id"
+	err := db.QueryRow(context.Background(), query, key).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Show query with id %v failed\n", key)

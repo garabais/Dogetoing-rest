@@ -14,6 +14,7 @@ type movie struct {
 	Description string    `json:"description"`
 	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
+	Score       float64   `json:"score"`
 }
 
 type game struct {
@@ -22,6 +23,7 @@ type game struct {
 	Description string    `json:"description"`
 	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
+	Score       float64   `json:"score"`
 }
 
 type show struct {
@@ -30,6 +32,7 @@ type show struct {
 	Description string    `json:"description"`
 	ImageUrl    string    `json:"imageURL"`
 	ReleaseDate time.Time `json:"releaseDate"`
+	Score       float64   `json:"score"`
 }
 
 type movieReview struct {
