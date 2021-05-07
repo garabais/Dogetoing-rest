@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -200,11 +201,17 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(context.Background(), query, m.Name, m.ReleaseDate, m.Description, m.ImageUrl).Scan(&m.Id)
 	if err != nil {
 		log.Printf("Error inserting value: %T %v\n", err, err)
-		http.Error(w, "Error adding movie", http.StatusInternalServerError)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding movie", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding movie", http.StatusInternalServerError)
+
+		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(m)
 }
 
@@ -236,12 +243,19 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 	query := "INSERT INTO game (name, release_date, description, image_url) VALUES ($1, $2, $3, $4) RETURNING id"
 	err = db.QueryRow(context.Background(), query, g.Name, g.ReleaseDate, g.Description, g.ImageUrl).Scan(&g.Id)
 	if err != nil {
-		log.Printf("Error inserting value: %v\n", err)
-		http.Error(w, "Error adding game", http.StatusInternalServerError)
+
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding game", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding game", http.StatusInternalServerError)
+
+		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(g)
 }
 
@@ -273,11 +287,17 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	query := "INSERT INTO show (name, release_date, description, image_url) VALUES ($1, $2, $3, $4) RETURNING id"
 	err = db.QueryRow(context.Background(), query, s.Name, s.ReleaseDate, s.Description, s.ImageUrl).Scan(&s.Id)
 	if err != nil {
-		log.Printf("Error inserting value: %v\n", err)
-		http.Error(w, "Error adding movie", http.StatusInternalServerError)
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding show", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding show", http.StatusInternalServerError)
+
+		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(s)
 }
