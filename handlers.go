@@ -34,7 +34,7 @@ func moviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	var movies []*movie = make([]*movie, 0)
 
-	for i := 0; rows.Next(); i++ {
+	for rows.Next() {
 		m := &movie{}
 		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
 		if err != nil {
@@ -62,7 +62,7 @@ func gamesHandler(w http.ResponseWriter, r *http.Request) {
 
 	var games []*game = make([]*game, 0)
 
-	for i := 0; rows.Next(); i++ {
+	for rows.Next() {
 		g := &game{}
 		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
 		if err != nil {
@@ -90,7 +90,7 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var shows []*show = make([]*show, 0)
 
-	for i := 0; rows.Next(); i++ {
+	for rows.Next() {
 		s := &show{}
 		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
 		if err != nil {
@@ -300,4 +300,58 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(s)
+}
+
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached UserHandler")
+
+	query := "SELECT u.id, u.name, u.register_date FROM user u ORDER BY u.id"
+	rows, err := db.Query(context.Background(), query)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("Movies query succesfull")
+
+	var users []*user = make([]*user, 0)
+
+	for rows.Next() {
+		u := &user{}
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		users = append(users, u)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func addUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addUserHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	var u user
+	decoder.Decode(&u)
+
+	query := "INSERT INTO user (id, name) VALUES ($1, $2) RETURNING register_date"
+	err := db.QueryRow(context.Background(), query, u.Id, u.Name).Scan(&u.RegisterDate)
+	if err != nil {
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding user", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding user", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(u)
 }

@@ -3,7 +3,7 @@ package main
 import "time"
 
 type user struct {
-	Id           string    `json:"id"`
+	Id           string    `json:"uid"`
 	Name         string    `json:"name"`
 	RegisterDate time.Time `json:"registerDate"`
 }
@@ -41,12 +41,12 @@ type movieReview struct {
 	Score  string `json:"score"`
 }
 type gameReview struct {
-	UserId string `json:"userId"`
+	UserId string `json:"uid"`
 	Game   game   `json:"game"`
 	Score  string `json:"score"`
 }
 type showReview struct {
-	UserId string `json:"userId"`
+	UserId string `json:"uid"`
 	Show   show   `json:"show"`
 	Score  string `json:"score"`
 }
