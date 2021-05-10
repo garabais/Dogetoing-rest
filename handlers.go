@@ -305,7 +305,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached UserHandler")
 
-	query := "SELECT u.id, u.name, u.register_date FROM user u ORDER BY u.id"
+	query := "SELECT u.id, u.name, u.register_date FROM account u ORDER BY u.id"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserHandler failed: %v\n", err)
@@ -338,7 +338,7 @@ func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	var u user
 	decoder.Decode(&u)
 
-	query := "INSERT INTO user (id, name) VALUES ($1, $2) RETURNING register_date"
+	query := "INSERT INTO account (id, name) VALUES ($1, $2) RETURNING register_date"
 	err := db.QueryRow(context.Background(), query, u.Id, u.Name).Scan(&u.RegisterDate)
 	if err != nil {
 		log.Printf("Error inserting value: %T %v\n", err, err)
