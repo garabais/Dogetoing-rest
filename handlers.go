@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -14,7 +15,94 @@ import (
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Dogetoing!\n"))
+	fmt.Fprintln(w,"Endpoints")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"Movies")
+	fmt.Fprintln(w,"\tGET:  /movies")
+	fmt.Fprintln(w,"\tGET:  /movies?name={name}")
+	fmt.Fprintln(w,"\tPOST: /movies")
+	fmt.Fprintln(w,"\tGET:  /movies/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"Games")
+	fmt.Fprintln(w,"\tGET:  /games")
+	fmt.Fprintln(w,"\tGET:  /games?name={name}")
+	fmt.Fprintln(w,"\tPOST: /games")
+	fmt.Fprintln(w,"\tGET:  /games/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"Shows")
+	fmt.Fprintln(w,"\tGET:  /shows")
+	fmt.Fprintln(w,"\tGET:  /shows?name={name}")
+	fmt.Fprintln(w,"\tPOST: /shows")
+	fmt.Fprintln(w,"\tGET:  /shows/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"Users")
+	fmt.Fprintln(w,"\tGET:  /users")
+	fmt.Fprintln(w,"\tPOST: /users")
+	fmt.Fprintln(w,"\tGET:  /users/{uid}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"User Movies")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/movies")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/movies?name={name}")
+	fmt.Fprintln(w,"\tPOST:  /users/{uid}/movies")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/movies/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"User Games")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/games")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/games?name={name}")
+	fmt.Fprintln(w,"\tPOST:  /users/{uid}/games")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/games/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"User Shows")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/shows")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/shows?name={name}")
+	fmt.Fprintln(w,"\tPOST:  /users/{uid}/shows")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/shows/{id}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"User Follows")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/follows")
+	fmt.Fprintln(w,"\tPOST:  /users/{uid}/follows")
+	fmt.Fprintln(w,"\tGET:   /users/{uid}/follows/{id}")
+	fmt.Fprintln(w,"")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"POST EXAMPLES")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"JSON add movie/game/show")
+	fmt.Fprintln(w,"{")
+	fmt.Fprintln(w,"\t\"name\":\"toy story\",")
+	fmt.Fprintln(w,"\t\"description\":\"Toys\",")
+	fmt.Fprintln(w,"\t\"imageURL\":\"https://url.com/imagen.png\",")
+	fmt.Fprintln(w,"\t\"releaseDate\":\"2016-09-17\"")
+	fmt.Fprintln(w,"}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"JSON add user")
+	fmt.Fprintln(w,"{")
+	fmt.Fprintln(w,"\t\"uid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\",")
+	fmt.Fprintln(w,"\t\"name\":\"Ari\"")
+	fmt.Fprintln(w,"}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"JSON add follower")
+	fmt.Fprintln(w,"{")
+	fmt.Fprintln(w,"\t\"followerUid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\"")
+	fmt.Fprintln(w,"}")
+	fmt.Fprintln(w,"")
+
+	fmt.Fprintln(w,"JSON add user review")
+	fmt.Fprintln(w,"{")
+	fmt.Fprintln(w,"\t\"id\": 1,")
+	fmt.Fprintln(w,"\t\"score\":10")
+	fmt.Fprintln(w,"}")
 }
 
 func moviesHandler(w http.ResponseWriter, r *http.Request) {
