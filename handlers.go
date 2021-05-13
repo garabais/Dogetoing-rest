@@ -86,7 +86,7 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	log.Print("Games query succesfull")
+	log.Print("Shows query succesfull")
 
 	var shows []*show = make([]*show, 0)
 
@@ -382,4 +382,123 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(u)
 
+}
+
+func UserMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 ORDER BY m.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserMovies query succesfull")
+
+	var movies []*movie = make([]*movie, 0)
+
+	for rows.Next() {
+		m := &movie{}
+		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		movies = append(movies, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(movies)
+}
+func UserGamesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 ORDER BY g.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserGamesHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserGames query succesfull")
+
+	var games []*game = make([]*game, 0)
+
+	for rows.Next() {
+		g := &game{}
+		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		games = append(games, g)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(games)
+}
+
+func UserShowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 ORDER BY s.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserShows query succesfull")
+
+	var shows []*show = make([]*show, 0)
+
+	for rows.Next() {
+		s := &show{}
+		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		shows = append(shows, s)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(shows)
+}
+
+func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserShows query succesfull")
+
+	var follows []*follow = make([]*follow, 0)
+
+	for rows.Next() {
+		f := &follow{}
+		err = rows.Scan(&f.Follower, &f.Following)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		follows = append(follows, f)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(follows)
 }

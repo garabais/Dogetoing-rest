@@ -50,3 +50,8 @@ type showReview struct {
 	Show   show   `json:"show"`
 	Score  string `json:"score"`
 }
+
+type follow struct {
+	Follower  string `json:"uid"`
+	Following string `json:"followUid"`
+}
