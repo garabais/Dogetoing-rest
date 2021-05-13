@@ -36,9 +36,9 @@ type show struct {
 }
 
 type Review struct {
-	UserId  string `json:"uid"`
-	Id int    `json:"id"`
-	Score   int    `json:"score"`
+	UserId string `json:"uid"`
+	Id     int    `json:"id"`
+	Score  int    `json:"score"`
 }
 
 type follow struct {

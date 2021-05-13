@@ -41,14 +41,17 @@ func main() {
 
 	r.HandleFunc("/", homeHandler)
 
+	r.HandleFunc("/movies", nameQueryMoviesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/movies", moviesHandler).Methods("GET")
 	r.HandleFunc("/movies", addMovieHandler).Methods("POST")
 	r.HandleFunc("/movies/{id}", singleMovieHandler).Methods("GET")
 
+	r.HandleFunc("/games", nameQueryGamesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/games", gamesHandler).Methods("GET")
 	r.HandleFunc("/games", addGameHandler).Methods("POST")
 	r.HandleFunc("/games/{id}", singleGameHandler).Methods("GET")
 
+	r.HandleFunc("/shows", nameQueryShowsHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/shows", showsHandler).Methods("GET")
 	r.HandleFunc("/shows", addShowHandler).Methods("POST")
 	r.HandleFunc("/shows/{id}", singleShowHandler).Methods("GET")
@@ -57,18 +60,21 @@ func main() {
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}", singleUserHandler).Methods("GET")
 
-	r.HandleFunc("/users/{uid}/movies", UserMoviesHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/movies", nameQueryUserMoviesHandler).Queries("name", "{name}").Methods("GET")
+	r.HandleFunc("/users/{uid}/movies", userMoviesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/movies", addUserMovieHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/movies/{id}", singleUserMovieHandler).Methods("GET")
 
-	r.HandleFunc("/users/{uid}/games", UserGamesHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/games", nameQueryUserGamesHandler).Queries("name", "{name}").Methods("GET")
+	r.HandleFunc("/users/{uid}/games", userGamesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/games", addUserGameHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/games/{id}", singleUserGameHandler).Methods("GET")
 
-	r.HandleFunc("/users/{uid}/shows", UserShowsHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/shows", nameQueryUserShowsHandler).Queries("name", "{name}").Methods("GET")
+	r.HandleFunc("/users/{uid}/shows", userShowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/shows", addUserShowHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/shows/{id}", singleUserShowHandler).Methods("GET")
-	
+
 	r.HandleFunc("/users/{uid}/follows", UserFollowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/follows", addUserFollowHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/follows/{id}", singleUserFollowHandler).Methods("GET")

@@ -103,6 +103,96 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(shows)
 }
 
+func nameQueryMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE name ~ $1 GROUP BY m.id ORDER BY m.id"
+	rows, err := db.Query(context.Background(), query, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryMovies query succesfull")
+
+	var movies []*movie = make([]*movie, 0)
+
+	for rows.Next() {
+		m := &movie{}
+		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		movies = append(movies, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(movies)
+}
+
+func nameQueryGamesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE name ~ $1 GROUP BY g.id ORDER BY g.id"
+	rows, err := db.Query(context.Background(), query, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryGamesHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryGames query succesfull")
+
+	var games []*game = make([]*game, 0)
+
+	for rows.Next() {
+		g := &game{}
+		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		games = append(games, g)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(games)
+}
+
+func nameQueryShowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE name ~ $1 GROUP BY s.id ORDER BY s.id"
+	rows, err := db.Query(context.Background(), query, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryShows query succesfull")
+
+	var shows []*show = make([]*show, 0)
+
+	for rows.Next() {
+		s := &show{}
+		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		shows = append(shows, s)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(shows)
+}
+
 func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -384,7 +474,7 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UserMoviesHandler(w http.ResponseWriter, r *http.Request) {
+func userMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
@@ -415,7 +505,8 @@ func UserMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
 }
-func UserGamesHandler(w http.ResponseWriter, r *http.Request) {
+
+func userGamesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
@@ -447,7 +538,7 @@ func UserGamesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(games)
 }
 
-func UserShowsHandler(w http.ResponseWriter, r *http.Request) {
+func userShowsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
@@ -461,6 +552,105 @@ func UserShowsHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	log.Print("UserShows query succesfull")
+
+	var shows []*show = make([]*show, 0)
+
+	for rows.Next() {
+		s := &show{}
+		var score int
+		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		s.Score = float64(score)
+		shows = append(shows, s)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(shows)
+}
+
+func nameQueryUserMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	name := vars["name"]
+
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY m.id"
+	rows, err := db.Query(context.Background(), query, uid, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryUserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryUserMovies query succesfull")
+
+	var movies []*movie = make([]*movie, 0)
+
+	for rows.Next() {
+		m := &movie{}
+		var score int
+		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		m.Score = float64(score)
+		movies = append(movies, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(movies)
+}
+
+func nameQueryUserGamesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	name := vars["name"]
+
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY g.id"
+	rows, err := db.Query(context.Background(), query, uid, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryUserGamesHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryUserGames query succesfull")
+
+	var games []*game = make([]*game, 0)
+
+	for rows.Next() {
+		g := &game{}
+		var score int
+		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		g.Score = float64(score)
+		games = append(games, g)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(games)
+}
+
+func nameQueryUserShowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	name := vars["name"]
+
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY s.id"
+	rows, err := db.Query(context.Background(), query, uid, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in nameQueryUserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("NameQueryUserShows query succesfull")
 
 	var shows []*show = make([]*show, 0)
 
