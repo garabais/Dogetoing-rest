@@ -502,3 +502,99 @@ func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(follows)
 }
+
+func singleUserMovieHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	m := movie{}
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE m.id = $1 AND r.account_id = $2"
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("UserMovie query with uid %v and id %v failed\n", uid, id)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Query in singleUserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("SingleUserMovie query with uid %v and id %v succesfull\n", uid, id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(m)
+}
+
+func singleUserGameHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	g := game{}
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE g.id = $1 and r.account_id = $2"
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("Game query with uid %v and id %v failed\n", uid, id)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Query in singleGameHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Game query with uid %v and id %v succesfull\n", uid, id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(g)
+}
+
+func singleUserShowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	s := show{}
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE s.id = $1 and r.account_id = $2"
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("Show query with uid %v and id %v failed\n", uid, id)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Query in singleShowHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Show query with uid %v and id %v succesfull\n", uid, id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(s)
+}
+
+func singleUserFollowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	f := follow{}
+	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = &2"
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&f.Follower, &f.Following)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("Follow query with uid %v and id %v failed\n", uid, id)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Follow in singleShowHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Follow query with uid %v and id %v succesfull\n", uid, id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(f)
+}
