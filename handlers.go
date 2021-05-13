@@ -403,10 +403,12 @@ func UserMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		m := &movie{}
-		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+		var score int
+		err = rows.Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
+		m.Score = float64(score)
 		movies = append(movies, m)
 	}
 
@@ -432,10 +434,12 @@ func UserGamesHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		g := &game{}
-		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+		var score int
+		err = rows.Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
+		g.Score = float64(score)
 		games = append(games, g)
 	}
 
@@ -462,10 +466,12 @@ func UserShowsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		s := &show{}
-		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+		var score int
+		err = rows.Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &score)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
+		s.Score = float64(score)
 		shows = append(shows, s)
 	}
 
@@ -509,8 +515,9 @@ func singleUserMovieHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 
 	m := movie{}
+	var score int
 	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE m.id = $1 AND r.account_id = $2"
-	err := db.QueryRow(context.Background(), query, id, uid).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("UserMovie query with uid %v and id %v failed\n", uid, id)
@@ -521,6 +528,7 @@ func singleUserMovieHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
+	m.Score = float64(score)
 	log.Printf("SingleUserMovie query with uid %v and id %v succesfull\n", uid, id)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -533,8 +541,9 @@ func singleUserGameHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 
 	g := game{}
+	var score int
 	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE g.id = $1 and r.account_id = $2"
-	err := db.QueryRow(context.Background(), query, id, uid).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Game query with uid %v and id %v failed\n", uid, id)
@@ -545,6 +554,7 @@ func singleUserGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
+	g.Score = float64(score)
 	log.Printf("Game query with uid %v and id %v succesfull\n", uid, id)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -557,8 +567,9 @@ func singleUserShowHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 
 	s := show{}
+	var score int
 	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE s.id = $1 and r.account_id = $2"
-	err := db.QueryRow(context.Background(), query, id, uid).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &score)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Show query with uid %v and id %v failed\n", uid, id)
@@ -569,6 +580,7 @@ func singleUserShowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
+	s.Score = float64(score)
 	log.Printf("Show query with uid %v and id %v succesfull\n", uid, id)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -597,4 +609,144 @@ func singleUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(f)
+}
+
+func addUserMovieHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addUserMovieHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding movie review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+
+	query := "INSERT INTO movie_review (account_id, movie_id, score) VALUES ($1, $2, $3)"
+	_, err = db.Exec(context.Background(), query, d.UserId, d.Id, d.Score)
+	if err != nil {
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding movie", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding movie", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(d)
+}
+
+func addUserGameHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addUserGameHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding movie review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+
+	query := "INSERT INTO game_review (account_id, game_id, score) VALUES ($1, $2, $3)"
+	_, err = db.Exec(context.Background(), query, d.UserId, d.Id, d.Score)
+	if err != nil {
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding game", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding game", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(d)
+}
+
+func addUserShowHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addUserShowHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding show review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+
+	query := "INSERT INTO show_review (account_id, show_id, score) VALUES ($1, $2, $3)"
+	_, err = db.Exec(context.Background(), query, d.UserId, d.Id, d.Score)
+	if err != nil {
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding show", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding show", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(d)
+}
+
+func addUserFollowHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addUserFollowHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	d := follow{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding follow review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.Follower = uid
+
+	query := "INSERT INTO follow (follower_id, following_id) VALUES ($1, $2)"
+	_, err = db.Exec(context.Background(), query, d.Follower, d.Following)
+	if err != nil {
+		log.Printf("Error inserting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error adding follow", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error adding follow", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(d)
 }
