@@ -94,7 +94,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w,"JSON add follower")
 	fmt.Fprintln(w,"\t{")
-	fmt.Fprintln(w,"\t\t\"followerUid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\"")
+	fmt.Fprintln(w,"\t\t\"followUid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\"")
 	fmt.Fprintln(w,"\t}")
 	fmt.Fprintln(w,"")
 
