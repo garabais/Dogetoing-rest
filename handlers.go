@@ -98,7 +98,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w,"\t}")
 	fmt.Fprintln(w,"")
 
-	fmt.Fprintln(w,"JSON add user review")
+	fmt.Fprintln(w,"JSON add user game/movie/show review")
 	fmt.Fprintln(w,"\t{")
 	fmt.Fprintln(w,"\t\t\"id\": 1,")
 	fmt.Fprintln(w,"\t\t\"score\":10")
