@@ -55,6 +55,7 @@ func main() {
 
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
+	r.HandleFunc("/users/{uid}", singleUserHandler).Methods("GET")
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{

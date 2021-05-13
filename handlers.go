@@ -105,14 +105,14 @@ func showsHandler(w http.ResponseWriter, r *http.Request) {
 
 func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	key := vars["id"]
+	id := vars["id"]
 
 	m := movie{}
 	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, COALESCE(avg(r.score), -1) FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE m.id = $1 GROUP BY m.id"
-	err := db.QueryRow(context.Background(), query, key).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
+	err := db.QueryRow(context.Background(), query, id).Scan(&m.Id, &m.Name, &m.Description, &m.ImageUrl, &m.ReleaseDate, &m.Score)
 
 	if err == pgx.ErrNoRows {
-		log.Printf("Movie query with id %v failed\n", key)
+		log.Printf("Movie query with id %v failed\n", id)
 		http.Error(w, "Data not found", http.StatusNotFound)
 		return
 	} else if err != nil {
@@ -120,7 +120,7 @@ func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Movie query with id %v succesfull\n", key)
+	log.Printf("Movie query with id %v succesfull\n", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(m)
@@ -128,14 +128,14 @@ func singleMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 func singleGameHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	key := vars["id"]
+	id := vars["id"]
 
 	g := game{}
 	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, COALESCE(avg(r.score), -1) FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE g.id = $1 GROUP BY g.id"
-	err := db.QueryRow(context.Background(), query, key).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
+	err := db.QueryRow(context.Background(), query, id).Scan(&g.Id, &g.Name, &g.Description, &g.ImageUrl, &g.ReleaseDate, &g.Score)
 
 	if err == pgx.ErrNoRows {
-		log.Printf("Game query with id %v failed\n", key)
+		log.Printf("Game query with id %v failed\n", id)
 		http.Error(w, "Data not found", http.StatusNotFound)
 		return
 	} else if err != nil {
@@ -143,7 +143,7 @@ func singleGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Game query with id %v succesfull\n", key)
+	log.Printf("Game query with id %v succesfull\n", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(g)
@@ -151,14 +151,14 @@ func singleGameHandler(w http.ResponseWriter, r *http.Request) {
 
 func singleShowHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	key := vars["id"]
+	id := vars["id"]
 
 	s := show{}
 	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, COALESCE(avg(r.score), -1) FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE s.id = $1 GROUP BY s.id"
-	err := db.QueryRow(context.Background(), query, key).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
+	err := db.QueryRow(context.Background(), query, id).Scan(&s.Id, &s.Name, &s.Description, &s.ImageUrl, &s.ReleaseDate, &s.Score)
 
 	if err == pgx.ErrNoRows {
-		log.Printf("Show query with id %v failed\n", key)
+		log.Printf("Show query with id %v failed\n", id)
 		http.Error(w, "Data not found", http.StatusNotFound)
 		return
 	} else if err != nil {
@@ -166,7 +166,7 @@ func singleShowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query failed", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Show query with id %v succesfull\n", key)
+	log.Printf("Show query with id %v succesfull\n", id)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(s)
@@ -305,7 +305,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached UserHandler")
 
-	query := "SELECT u.id, u.name, u.register_date FROM account u ORDER BY u.id"
+	query := "SELECT u.id, u.name, u.register_date FROM account u ORDER BY u.register_date"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserHandler failed: %v\n", err)
@@ -354,4 +354,32 @@ func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(u)
+}
+
+func singleUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached SingleUserHandler")
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	u := user{}
+
+	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE u.id = $1"
+	err := db.QueryRow(context.Background(), query, uid).Scan(&u.Id, &u.Name, &u.RegisterDate)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("User query with id %v failed\n", uid)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Query in singleMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("User query with id %v succesfull\n", uid)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(u)
+
 }
