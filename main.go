@@ -64,20 +64,24 @@ func main() {
 	r.HandleFunc("/users/{uid}/movies", userMoviesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/movies", addUserMovieHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/movies/{id}", singleUserMovieHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/movies/{id}", deleteUserMovieHandler).Methods("DELETE")
 
 	r.HandleFunc("/users/{uid}/games", nameQueryUserGamesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/games", userGamesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/games", addUserGameHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/games/{id}", singleUserGameHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/games/{id}", deleteUserGamesHandler).Methods("DELETE")
 
 	r.HandleFunc("/users/{uid}/shows", nameQueryUserShowsHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/shows", userShowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/shows", addUserShowHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/shows/{id}", singleUserShowHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/shows/{id}", deleteUserShowsHandler).Methods("DELETE")
 
 	r.HandleFunc("/users/{uid}/follows", UserFollowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/follows", addUserFollowHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}/follows/{id}", singleUserFollowHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/follows/{id}", deleteUserFollowHandler).Methods("DELETE")
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{

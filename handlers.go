@@ -46,30 +46,34 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w,"")
 
 	fmt.Fprintln(w,"User Movies")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/movies")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/movies?name={name}")
-	fmt.Fprintln(w,"\tPOST: /users/{uid}/movies")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/movies/{id}")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies?name={name}")
+	fmt.Fprintln(w,"\tPOST:    /users/{uid}/movies")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies/{id}")
+	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/movies/{id}")
 	fmt.Fprintln(w,"")
 
 	fmt.Fprintln(w,"User Games")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/games")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/games?name={name}")
-	fmt.Fprintln(w,"\tPOST: /users/{uid}/games")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/games/{id}")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/games")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/games?name={name}")
+	fmt.Fprintln(w,"\tPOST:    /users/{uid}/games")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/games/{id}")
+	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/games/{id}")
 	fmt.Fprintln(w,"")
 
 	fmt.Fprintln(w,"User Shows")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/shows")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/shows?name={name}")
-	fmt.Fprintln(w,"\tPOST: /users/{uid}/shows")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/shows/{id}")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows?name={name}")
+	fmt.Fprintln(w,"\tPOST:    /users/{uid}/shows")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows/{id}")
+	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/shows/{id}")
 	fmt.Fprintln(w,"")
 
 	fmt.Fprintln(w,"User Follows")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/follows")
-	fmt.Fprintln(w,"\tPOST: /users/{uid}/follows")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}/follows/{id}")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/follows")
+	fmt.Fprintln(w,"\tPOST:    /users/{uid}/follows")
+	fmt.Fprintln(w,"\tGET:     /users/{uid}/follows/{id}")
+	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/follows/{id}")
 	fmt.Fprintln(w,"")
 	fmt.Fprintln(w,"")
 
@@ -871,8 +875,8 @@ func singleUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 
 	f := follow{}
-	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = &2"
-	err := db.QueryRow(context.Background(), query, id, uid).Scan(&f.Follower, &f.Following)
+	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = $2"
+	err := db.QueryRow(context.Background(), query, uid, id).Scan(&f.Follower, &f.Following)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Follow query with uid %v and id %v failed\n", uid, id)
@@ -1027,4 +1031,108 @@ func addUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(d)
+}
+
+func deleteUserMovieHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	log.Printf("Delete User Movie with uid %v and id %v\n", uid, id)
+
+	query := "DELETE FROM movie_review WHERE account_id = $1 AND movie_id = $2"
+	_, err := db.Exec(context.Background(), query, uid, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting movie", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting movie", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull with uid %v and id %v succesfull\n", uid, id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteUserGamesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	log.Printf("Delete User game with uid %v and id %v\n", uid, id)
+
+	query := "DELETE FROM game_review WHERE account_id = $1 AND game_id = $2"
+	_, err := db.Exec(context.Background(), query, uid, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting game", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting game", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull with uid %v and id %v succesfull\n", uid, id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteUserShowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	log.Printf("Delete User show with uid %v and id %v\n", uid, id)
+
+	query := "DELETE FROM show_review WHERE account_id = $1 AND show_id = $2"
+	_, err := db.Exec(context.Background(), query, uid, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting show", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting show", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull with uid %v and id %v succesfull\n", uid, id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteUserFollowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	log.Printf("Delete User follow with uid %v and id %v\n", uid, id)
+
+	query := "DELETE FROM follow WHERE follower_id = $1 AND following_id = $2"
+	_, err := db.Exec(context.Background(), query, uid, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting follow", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting follow", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull with uid %v and id %v succesfull\n", uid, id)
+
+	w.WriteHeader(http.StatusNoContent)
 }
