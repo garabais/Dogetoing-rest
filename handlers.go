@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,98 +16,111 @@ import (
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w,"Endpoints")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "Endpoints")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"Movies")
-	fmt.Fprintln(w,"\tGET:  /movies")
-	fmt.Fprintln(w,"\tGET:  /movies?name={name}")
-	fmt.Fprintln(w,"\tPOST: /movies")
-	fmt.Fprintln(w,"\tGET:  /movies/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "Movies")
+	fmt.Fprintln(w, "\tGET:  /movies")
+	fmt.Fprintln(w, "\tGET:  /movies?name={name}")
+	fmt.Fprintln(w, "\tPOST: /movies")
+	fmt.Fprintln(w, "\tGET:  /movies/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"Games")
-	fmt.Fprintln(w,"\tGET:  /games")
-	fmt.Fprintln(w,"\tGET:  /games?name={name}")
-	fmt.Fprintln(w,"\tPOST: /games")
-	fmt.Fprintln(w,"\tGET:  /games/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "Games")
+	fmt.Fprintln(w, "\tGET:  /games")
+	fmt.Fprintln(w, "\tGET:  /games?name={name}")
+	fmt.Fprintln(w, "\tPOST: /games")
+	fmt.Fprintln(w, "\tGET:  /games/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"Shows")
-	fmt.Fprintln(w,"\tGET:  /shows")
-	fmt.Fprintln(w,"\tGET:  /shows?name={name}")
-	fmt.Fprintln(w,"\tPOST: /shows")
-	fmt.Fprintln(w,"\tGET:  /shows/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "Shows")
+	fmt.Fprintln(w, "\tGET:  /shows")
+	fmt.Fprintln(w, "\tGET:  /shows?name={name}")
+	fmt.Fprintln(w, "\tPOST: /shows")
+	fmt.Fprintln(w, "\tGET:  /shows/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"Users")
-	fmt.Fprintln(w,"\tGET:  /users")
-	fmt.Fprintln(w,"\tPOST: /users")
-	fmt.Fprintln(w,"\tGET:  /users/{uid}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "Users")
+	fmt.Fprintln(w, "\tGET:  /users")
+	fmt.Fprintln(w, "\tPOST: /users")
+	fmt.Fprintln(w, "\tGET:  /users/{uid}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"User Movies")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies?name={name}")
-	fmt.Fprintln(w,"\tPOST:    /users/{uid}/movies")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/movies/{id}")
-	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/movies/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "User Movies")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/movies")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/movies?name={name}")
+	fmt.Fprintln(w, "\tPOST:    /users/{uid}/movies")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/movies/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /users/{uid}/movies/{id}")
+	fmt.Fprintln(w, "\tPUT:     /users/{uid}/movies/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"User Games")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/games")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/games?name={name}")
-	fmt.Fprintln(w,"\tPOST:    /users/{uid}/games")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/games/{id}")
-	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/games/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "User Games")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/games")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/games?name={name}")
+	fmt.Fprintln(w, "\tPOST:    /users/{uid}/games")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/games/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /users/{uid}/games/{id}")
+	fmt.Fprintln(w, "\tPUT:     /users/{uid}/games/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"User Shows")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows?name={name}")
-	fmt.Fprintln(w,"\tPOST:    /users/{uid}/shows")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/shows/{id}")
-	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/shows/{id}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "User Shows")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/shows")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/shows?name={name}")
+	fmt.Fprintln(w, "\tPOST:    /users/{uid}/shows")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/shows/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /users/{uid}/shows/{id}")
+	fmt.Fprintln(w, "\tPUT:     /users/{uid}/shows/{id}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"User Follows")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/follows")
-	fmt.Fprintln(w,"\tPOST:    /users/{uid}/follows")
-	fmt.Fprintln(w,"\tGET:     /users/{uid}/follows/{id}")
-	fmt.Fprintln(w,"\tDELETE:  /users/{uid}/follows/{id}")
-	fmt.Fprintln(w,"")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "User Follows")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/follows")
+	fmt.Fprintln(w, "\tPOST:    /users/{uid}/follows")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/follows/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /users/{uid}/follows/{id}")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"POST EXAMPLES")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "POST EXAMPLES")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"JSON add movie/game/show")
-	fmt.Fprintln(w,"\t{")
-	fmt.Fprintln(w,"\t\t\"name\":\"toy story\",")
-	fmt.Fprintln(w,"\t\t\"description\":\"Toys\",")
-	fmt.Fprintln(w,"\t\t\"imageURL\":\"https://url.com/imagen.png\",")
-	fmt.Fprintln(w,"\t\t\"releaseDate\":\"2016-09-17\"")
-	fmt.Fprintln(w,"\t}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "JSON add movie/game/show")
+	fmt.Fprintln(w, "\t{")
+	fmt.Fprintln(w, "\t\t\"name\":\"toy story\",")
+	fmt.Fprintln(w, "\t\t\"description\":\"Toys\",")
+	fmt.Fprintln(w, "\t\t\"imageURL\":\"https://url.com/imagen.png\",")
+	fmt.Fprintln(w, "\t\t\"releaseDate\":\"2016-09-17\"")
+	fmt.Fprintln(w, "\t}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"JSON add user")
-	fmt.Fprintln(w,"\t{")
-	fmt.Fprintln(w,"\t\t\"uid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\",")
-	fmt.Fprintln(w,"\t\t\"name\":\"Ari\"")
-	fmt.Fprintln(w,"\t}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "JSON add user")
+	fmt.Fprintln(w, "\t{")
+	fmt.Fprintln(w, "\t\t\"uid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\",")
+	fmt.Fprintln(w, "\t\t\"name\":\"Ari\"")
+	fmt.Fprintln(w, "\t}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"JSON add follower")
-	fmt.Fprintln(w,"\t{")
-	fmt.Fprintln(w,"\t\t\"followUid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\"")
-	fmt.Fprintln(w,"\t}")
-	fmt.Fprintln(w,"")
+	fmt.Fprintln(w, "JSON add follower")
+	fmt.Fprintln(w, "\t{")
+	fmt.Fprintln(w, "\t\t\"followUid\":\"Jyu2oXXi9XQZf2CJz6ZWyeNycAB2\"")
+	fmt.Fprintln(w, "\t}")
+	fmt.Fprintln(w, "")
 
-	fmt.Fprintln(w,"JSON add user game/movie/show review")
-	fmt.Fprintln(w,"\t{")
-	fmt.Fprintln(w,"\t\t\"id\": 1,")
-	fmt.Fprintln(w,"\t\t\"score\":10")
-	fmt.Fprintln(w,"\t}")
+	fmt.Fprintln(w, "JSON add user game/movie/show review")
+	fmt.Fprintln(w, "\t{")
+	fmt.Fprintln(w, "\t\t\"id\": 1,")
+	fmt.Fprintln(w, "\t\t\"score\":10")
+	fmt.Fprintln(w, "\t}")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "")
+
+	fmt.Fprintln(w, "PUT EXAMPLES")
+	fmt.Fprintln(w, "")
+
+	fmt.Fprintln(w, "JSON update user game/movie/show review")
+	fmt.Fprintln(w, "\t{")
+	fmt.Fprintln(w, "\t\t\"score\":10")
+	fmt.Fprintln(w, "\t}")
 }
 
 func moviesHandler(w http.ResponseWriter, r *http.Request) {
@@ -1133,6 +1147,123 @@ func deleteUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Delete succesfull with uid %v and id %v succesfull\n", uid, id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func updateUserMovieHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateUserMovieHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	id := vars["id"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding movie review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+	d.Id, _ = strconv.Atoi(id)
+
+	query := "UPDATE movie_review SET score = $1 WHERE account_id = $2 AND movie_id =$3"
+	c, err := db.Exec(context.Background(), query, d.Score, d.UserId, d.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error updating movie", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error updating movie", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "Review not found", http.StatusNotFound)
+		log.Printf("Error updating: review with id %v not found for user %v\n", d.Id, d.UserId)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func updateUserGameHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateUserGameHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	id := vars["id"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding games review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+	d.Id, _ = strconv.Atoi(id)
+
+	query := "UPDATE game_review SET score = $1 WHERE account_id = $2 AND game_id =$3"
+	c, err := db.Exec(context.Background(), query, d.Score, d.UserId, d.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error updating game", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error updating game", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "Review not found", http.StatusNotFound)
+		log.Printf("Error updating: review with id %v not found for user %v\n", d.Id, d.UserId)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func updateUserShowsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateUserShowsHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	id := vars["id"]
+
+	d := Review{}
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding show review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	d.UserId = uid
+	d.Id, _ = strconv.Atoi(id)
+
+	query := "UPDATE show_review SET score = $1 WHERE account_id = $2 AND show_id =$3"
+	c, err := db.Exec(context.Background(), query, d.Score, d.UserId, d.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error updating show", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error updating show", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "Review not found", http.StatusNotFound)
+		log.Printf("Error updating: review with id %v not found for user %v\n", d.Id, d.UserId)
+		return
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }

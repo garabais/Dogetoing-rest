@@ -44,17 +44,17 @@ func main() {
 	r.HandleFunc("/movies", nameQueryMoviesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/movies", moviesHandler).Methods("GET")
 	r.HandleFunc("/movies", addMovieHandler).Methods("POST")
-	r.HandleFunc("/movies/{id}", singleMovieHandler).Methods("GET")
+	r.HandleFunc("/movies/{id:[0-9]+}", singleMovieHandler).Methods("GET")
 
 	r.HandleFunc("/games", nameQueryGamesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/games", gamesHandler).Methods("GET")
 	r.HandleFunc("/games", addGameHandler).Methods("POST")
-	r.HandleFunc("/games/{id}", singleGameHandler).Methods("GET")
+	r.HandleFunc("/games/{id:[0-9]+}", singleGameHandler).Methods("GET")
 
 	r.HandleFunc("/shows", nameQueryShowsHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/shows", showsHandler).Methods("GET")
 	r.HandleFunc("/shows", addShowHandler).Methods("POST")
-	r.HandleFunc("/shows/{id}", singleShowHandler).Methods("GET")
+	r.HandleFunc("/shows/{id:[0-9]+}", singleShowHandler).Methods("GET")
 
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
@@ -63,25 +63,28 @@ func main() {
 	r.HandleFunc("/users/{uid}/movies", nameQueryUserMoviesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/movies", userMoviesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/movies", addUserMovieHandler).Methods("POST")
-	r.HandleFunc("/users/{uid}/movies/{id}", singleUserMovieHandler).Methods("GET")
-	r.HandleFunc("/users/{uid}/movies/{id}", deleteUserMovieHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/movies/{id:[0-9]+}", singleUserMovieHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/movies/{id:[0-9]+}", deleteUserMovieHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/movies/{id:[0-9]+}", updateUserMovieHandler).Methods("PUT")
 
 	r.HandleFunc("/users/{uid}/games", nameQueryUserGamesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/games", userGamesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/games", addUserGameHandler).Methods("POST")
-	r.HandleFunc("/users/{uid}/games/{id}", singleUserGameHandler).Methods("GET")
-	r.HandleFunc("/users/{uid}/games/{id}", deleteUserGamesHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/games/{id:[0-9]+}", singleUserGameHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/games/{id:[0-9]+}", deleteUserGamesHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/games/{id:[0-9]+}", updateUserGameHandler).Methods("PUT")
 
 	r.HandleFunc("/users/{uid}/shows", nameQueryUserShowsHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/shows", userShowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/shows", addUserShowHandler).Methods("POST")
-	r.HandleFunc("/users/{uid}/shows/{id}", singleUserShowHandler).Methods("GET")
-	r.HandleFunc("/users/{uid}/shows/{id}", deleteUserShowsHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/shows/{id:[0-9]+}", singleUserShowHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/shows/{id:[0-9]+}", deleteUserShowsHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/shows/{id:[0-9]+}", updateUserShowsHandler).Methods("PUT")
 
 	r.HandleFunc("/users/{uid}/follows", UserFollowsHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/follows", addUserFollowHandler).Methods("POST")
-	r.HandleFunc("/users/{uid}/follows/{id}", singleUserFollowHandler).Methods("GET")
-	r.HandleFunc("/users/{uid}/follows/{id}", deleteUserFollowHandler).Methods("DELETE")
+	r.HandleFunc("/users/{uid}/follows/{id:[0-9]+}", singleUserFollowHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/follows/{id:[0-9]+}", deleteUserFollowHandler).Methods("DELETE")
 
 	// Create a server so you can gracefully shutdown it
 	srv := &http.Server{
