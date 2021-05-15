@@ -79,6 +79,11 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:     /users/{uid}/follows/{id}")
 	fmt.Fprintln(w, "\tDELETE:  /users/{uid}/follows/{id}")
 	fmt.Fprintln(w, "")
+
+	fmt.Fprintln(w, "User Followers")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/followers")
+	fmt.Fprintln(w, "\tGET:     /users/{uid}/followers/{id}")
+	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintln(w, "POST EXAMPLES")
@@ -805,6 +810,36 @@ func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(follows)
 }
 
+func UserFollowersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.following_id = $1"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserShows query succesfull")
+
+	var follows []*follow = make([]*follow, 0)
+
+	for rows.Next() {
+		f := &follow{}
+		err = rows.Scan(&f.Follower, &f.Following)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		follows = append(follows, f)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(follows)
+}
+
 func singleUserMovieHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -891,6 +926,30 @@ func singleUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 	f := follow{}
 	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = $2"
 	err := db.QueryRow(context.Background(), query, uid, id).Scan(&f.Follower, &f.Following)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("Follow query with uid %v and id %v failed\n", uid, id)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Follow in singleShowHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Follow query with uid %v and id %v succesfull\n", uid, id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(f)
+}
+
+func singleUserFollowersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	uid := vars["uid"]
+
+	f := follow{}
+	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = $2"
+	err := db.QueryRow(context.Background(), query, id, uid).Scan(&f.Follower, &f.Following)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Follow query with uid %v and id %v failed\n", uid, id)
