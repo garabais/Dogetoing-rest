@@ -532,12 +532,42 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
+func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	log.Print("Reached SingleUserHandler")
+
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	u := user{}
+
+	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE u.name = $1"
+	err := db.QueryRow(context.Background(), query, name).Scan(&u.Id, &u.Name, &u.RegisterDate)
+
+	if err == pgx.ErrNoRows {
+		log.Printf("User query with id %v failed\n", name)
+		http.Error(w, "Data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Query in singleMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("User query with id %v succesfull\n", name)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(u)
+}
+
 func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached addUserHandler")
 	decoder := json.NewDecoder(r.Body)
 
 	var u user
 	decoder.Decode(&u)
+
+	u.Name = strings.ToLower(u.Name)
 
 	query := "INSERT INTO account (id, name) VALUES ($1, $2) RETURNING register_date"
 	err := db.QueryRow(context.Background(), query, u.Id, u.Name).Scan(&u.RegisterDate)

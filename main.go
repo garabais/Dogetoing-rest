@@ -56,6 +56,7 @@ func main() {
 	r.HandleFunc("/shows", addShowHandler).Methods("POST")
 	r.HandleFunc("/shows/{id:[0-9]+}", singleShowHandler).Methods("GET")
 
+	r.HandleFunc("/users", nameQueryUserHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}", singleUserHandler).Methods("GET")
