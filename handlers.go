@@ -539,6 +539,8 @@ func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 
+	name = strings.ToLower(name)
+
 	u := user{}
 
 	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE u.name = $1"
