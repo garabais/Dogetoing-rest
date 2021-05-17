@@ -533,6 +533,40 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached UserHandler")
+
+	vars := mux.Vars(r)
+	name := vars["name"]
+
+	name = strings.ToLower(name)
+
+	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE name ~ $1 ORDER BY u.register_date"
+	rows, err := db.Query(context.Background(), query, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("Movies query succesfull")
+
+	var users []*user = make([]*user, 0)
+
+	for rows.Next() {
+		u := &user{}
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		users = append(users, u)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func exactNameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Reached SingleUserHandler")
 
