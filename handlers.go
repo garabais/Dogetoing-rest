@@ -852,8 +852,9 @@ func nameQueryUserShowsHandler(w http.ResponseWriter, r *http.Request) {
 func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
-
-	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
+	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and a.id = f.following_id"
+	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
+	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
 	rows, err := db.Query(context.Background(), query, uid)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserShowsHandler failed: %v\n", err)
@@ -868,7 +869,7 @@ func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		f := &follow{}
-		err = rows.Scan(&f.Follower, &f.Following)
+		err = rows.Scan(&f.Follower, &f.Following, &f.Name)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -993,8 +994,8 @@ func singleUserFollowHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 
 	f := follow{}
-	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1 and f.following_id = $2"
-	err := db.QueryRow(context.Background(), query, uid, id).Scan(&f.Follower, &f.Following)
+	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and f.following_id = $2 and a.id = f.following_id"
+	err := db.QueryRow(context.Background(), query, uid, id).Scan(&f.Follower, &f.Following, &f.Name)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("Follow query with uid %v and id %v failed\n", uid, id)

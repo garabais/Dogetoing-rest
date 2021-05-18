@@ -44,4 +44,5 @@ type Review struct {
 type follow struct {
 	Follower  string `json:"uid"`
 	Following string `json:"followUid"`
+	Name      string `json:"followName"`
 }
