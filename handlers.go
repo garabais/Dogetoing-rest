@@ -44,6 +44,9 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /users")
 	fmt.Fprintln(w, "\tPOST: /users")
 	fmt.Fprintln(w, "\tGET:  /users/{uid}")
+	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/movies")
+	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/games")
+	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/shows")
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintln(w, "User Movies")
@@ -1391,4 +1394,124 @@ func updateUserShowsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func userActivityMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "select account.id, account.name, movie.id, movie.name, movie_review.score from follow , movie_review, movie, account  where follower_id = $1 and account_id = following_id and movie.id = movie_review.movie_id and follow.following_id = account.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserMovies query succesfull")
+
+	type t struct {
+		FollowingUid  string `json:"followingUid"`
+		FollowingName string `json:"followingName"`
+		Name          string `json:"name"`
+		Id            int    `json:"id"`
+		Score         int    `json:"score"`
+	}
+
+	var resp = make([]t, 0)
+
+	for rows.Next() {
+		var fUid, fName, name string
+		var id, score int
+		err = rows.Scan(&fUid, &fName, &id, &name, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		m := t{fUid, fName, name, id, score}
+		resp = append(resp, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func userActivityGamesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "select account.id, account.name, game.id, game.name, game_review.score from follow , game_review, game, account  where follower_id = $1 and account_id = following_id and game.id = game_review.game_id and follow.following_id = account.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserMovies query succesfull")
+
+	type t struct {
+		FollowingUid  string `json:"followingUid"`
+		FollowingName string `json:"followingName"`
+		Name          string `json:"name"`
+		Id            int    `json:"id"`
+		Score         int    `json:"score"`
+	}
+
+	var resp = make([]t, 0)
+
+	for rows.Next() {
+		var fUid, fName, name string
+		var id, score int
+		err = rows.Scan(&fUid, &fName, &id, &name, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		m := t{fUid, fName, name, id, score}
+		resp = append(resp, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func userActivityShowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	query := "select account.id, account.name, show.id, show.name, show_review.score from follow , show_review, show, account  where follower_id = $1 and account_id = following_id and show.id = show_review.show_id and follow.following_id = account.id"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserMovieHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserMovies query succesfull")
+
+	type t struct {
+		FollowingUid  string `json:"followingUid"`
+		FollowingName string `json:"followingName"`
+		Name          string `json:"name"`
+		Id            int    `json:"id"`
+		Score         int    `json:"score"`
+	}
+
+	var resp = make([]t, 0)
+
+	for rows.Next() {
+		var fUid, fName, name string
+		var id, score int
+		err = rows.Scan(&fUid, &fName, &id, &name, &score)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		m := t{fUid, fName, name, id, score}
+		resp = append(resp, m)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

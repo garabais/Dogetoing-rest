@@ -61,6 +61,10 @@ func main() {
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}", singleUserHandler).Methods("GET")
+		
+	r.HandleFunc("/users/{uid}/feed/movies", userActivityMoviesHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/feed/games", userActivityGamesHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/feed/shows", userActivityShowsHandler).Methods("GET")
 
 	r.HandleFunc("/users/{uid}/movies", nameQueryUserMoviesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users/{uid}/movies", userMoviesHandler).Methods("GET")
