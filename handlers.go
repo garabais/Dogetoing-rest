@@ -24,6 +24,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /movies?name={name}")
 	fmt.Fprintln(w, "\tPOST: /movies")
 	fmt.Fprintln(w, "\tGET:  /movies/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /movies/{id}")
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintln(w, "Games")
@@ -31,6 +32,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /games?name={name}")
 	fmt.Fprintln(w, "\tPOST: /games")
 	fmt.Fprintln(w, "\tGET:  /games/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /games/{id}")
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintln(w, "Shows")
@@ -38,6 +40,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /shows?name={name}")
 	fmt.Fprintln(w, "\tPOST: /shows")
 	fmt.Fprintln(w, "\tGET:  /shows/{id}")
+	fmt.Fprintln(w, "\tDELETE:  /shows/{id}")
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintln(w, "Users")
@@ -504,6 +507,81 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(s)
+}
+
+func deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	log.Printf("Delete Movie with id %v\n", id)
+
+	query := "DELETE FROM movie WHERE AND id = $1"
+	_, err := db.Exec(context.Background(), query, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting movie", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting movie", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull id %v succesfull\n", id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteGameHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	log.Printf("Delete game with id %v\n", id)
+
+	query := "DELETE FROM game WHERE AND id = $1"
+	_, err := db.Exec(context.Background(), query, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting game", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting game", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull id %v succesfull\n", id)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteShowHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	log.Printf("Delete show with id %v\n", id)
+
+	query := "DELETE FROM show WHERE AND id = $1"
+	_, err := db.Exec(context.Background(), query, id)
+
+	if err != nil {
+		log.Printf("Error deleting value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error deleting show", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error deleting show", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	log.Printf("Delete succesfull id %v succesfull\n", id)
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func userHandler(w http.ResponseWriter, r *http.Request) {

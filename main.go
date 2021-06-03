@@ -45,16 +45,19 @@ func main() {
 	r.HandleFunc("/movies", moviesHandler).Methods("GET")
 	r.HandleFunc("/movies", addMovieHandler).Methods("POST")
 	r.HandleFunc("/movies/{id:[0-9]+}", singleMovieHandler).Methods("GET")
+	r.HandleFunc("/movies/{id:[0-9]+}", deleteMovieHandler).Methods("DELETE")
 
 	r.HandleFunc("/games", nameQueryGamesHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/games", gamesHandler).Methods("GET")
 	r.HandleFunc("/games", addGameHandler).Methods("POST")
 	r.HandleFunc("/games/{id:[0-9]+}", singleGameHandler).Methods("GET")
+	r.HandleFunc("/games/{id:[0-9]+}", deleteGameHandler).Methods("DELETE")
 
 	r.HandleFunc("/shows", nameQueryShowsHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/shows", showsHandler).Methods("GET")
 	r.HandleFunc("/shows", addShowHandler).Methods("POST")
 	r.HandleFunc("/shows/{id:[0-9]+}", singleShowHandler).Methods("GET")
+	r.HandleFunc("/shows/{id:[0-9]+}", deleteShowHandler).Methods("DELETE")
 
 	r.HandleFunc("/users", exactNameQueryUserHandler).Queries("ename", "{name}").Methods("GET")
 	r.HandleFunc("/users", nameQueryUserHandler).Queries("name", "{name}").Methods("GET")
