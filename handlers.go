@@ -647,36 +647,6 @@ func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func exactNameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Print("Reached SingleUserHandler")
-
-	vars := mux.Vars(r)
-	name := vars["name"]
-
-	name = strings.ToLower(name)
-
-	u := user{}
-
-	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE u.name = $1"
-	err := db.QueryRow(context.Background(), query, name).Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
-
-	if err == pgx.ErrNoRows {
-		log.Printf("User query with id %v failed\n", name)
-		http.Error(w, "Data not found", http.StatusNotFound)
-		return
-	} else if err != nil {
-		log.Printf("Query in singleMovieHandler failed: %v\n", err)
-		http.Error(w, "Query failed", http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("User query with id %v succesfull\n", name)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(u)
-}
-
 func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached addUserHandler")
 	decoder := json.NewDecoder(r.Body)
@@ -1629,4 +1599,47 @@ func addAdminHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+}
+func changeUserNameHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached changeUserNameHandler")
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+
+	decoder := json.NewDecoder(r.Body)
+
+	d := make(map[string]string)
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding follow review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	name, ok := d["name"]
+	if !ok {
+		log.Println("JSON doesn't have name")
+		http.Error(w, "Missing name", http.StatusBadRequest)
+		return
+	}
+
+	u := &user{Id: uid, Name: name}
+	log.Println(u)
+
+	query := "UPDATE account SET name = $1 WHERE id = $2 RETURNING register_date, is_admin"
+	err = db.QueryRow(context.Background(), query, name, uid).Scan(&u.RegisterDate, &u.Admin)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error making admin", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error making admin", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(u)
 }

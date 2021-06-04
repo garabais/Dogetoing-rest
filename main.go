@@ -59,11 +59,11 @@ func main() {
 	r.HandleFunc("/shows/{id:[0-9]+}", singleShowHandler).Methods("GET")
 	r.HandleFunc("/shows/{id:[0-9]+}", deleteShowHandler).Methods("DELETE")
 
-	r.HandleFunc("/users", exactNameQueryUserHandler).Queries("ename", "{name}").Methods("GET")
 	r.HandleFunc("/users", nameQueryUserHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
 	r.HandleFunc("/users/{uid}", singleUserHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}", changeUserNameHandler).Methods("PUT")
 		
 	r.HandleFunc("/users/{uid}/feed/movies", userActivityMoviesHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/feed/games", userActivityGamesHandler).Methods("GET")
