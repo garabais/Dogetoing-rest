@@ -587,7 +587,7 @@ func deleteShowHandler(w http.ResponseWriter, r *http.Request) {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached UserHandler")
 
-	query := "SELECT u.id, u.name, u.register_date FROM account u ORDER BY u.register_date"
+	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u ORDER BY u.register_date"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserHandler failed: %v\n", err)
@@ -602,7 +602,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		u := &user{}
-		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate)
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -621,7 +621,7 @@ func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	name = strings.ToLower(name)
 
-	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE name ~ $1 ORDER BY u.register_date"
+	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE name ~ $1 ORDER BY u.register_date"
 	rows, err := db.Query(context.Background(), query, name)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserHandler failed: %v\n", err)
@@ -636,7 +636,7 @@ func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		u := &user{}
-		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate)
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
@@ -658,8 +658,8 @@ func exactNameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	u := user{}
 
-	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE u.name = $1"
-	err := db.QueryRow(context.Background(), query, name).Scan(&u.Id, &u.Name, &u.RegisterDate)
+	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE u.name = $1"
+	err := db.QueryRow(context.Background(), query, name).Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("User query with id %v failed\n", name)
@@ -712,8 +712,8 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	u := user{}
 
-	query := "SELECT u.id, u.name, u.register_date FROM account u WHERE u.id = $1"
-	err := db.QueryRow(context.Background(), query, uid).Scan(&u.Id, &u.Name, &u.RegisterDate)
+	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE u.id = $1"
+	err := db.QueryRow(context.Background(), query, uid).Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
 
 	if err == pgx.ErrNoRows {
 		log.Printf("User query with id %v failed\n", uid)

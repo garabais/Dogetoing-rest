@@ -6,6 +6,7 @@ type user struct {
 	Id           string    `json:"uid"`
 	Name         string    `json:"name"`
 	RegisterDate time.Time `json:"registerDate"`
+	Admin bool `json:"is_admin"`
 }
 
 type movie struct {
