@@ -1594,3 +1594,39 @@ func userActivityShowsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
+
+func addAdminHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached addAdminHandler")
+	decoder := json.NewDecoder(r.Body)
+
+	d := make(map[string]string)
+
+	err := decoder.Decode(&d)
+	if err != nil {
+		log.Printf("Error decoding follow review json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	uid, ok := d["uid"]
+	if !ok {
+		log.Println("JSON doesn't have uid")
+		http.Error(w, "Missing uid", http.StatusBadRequest)
+		return
+	}
+
+	query := "UPDATE account SET is_admin = true WHERE id = $1"
+	_, err = db.Exec(context.Background(), query, uid)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if _, ok := err.(*pgconn.PgError); ok {
+			http.Error(w, "Error making admin", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Error making admin", http.StatusInternalServerError)
+
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
