@@ -24,6 +24,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /movies?name={name}")
 	fmt.Fprintln(w, "\tPOST: /movies")
 	fmt.Fprintln(w, "\tGET:  /movies/{id}")
+	fmt.Fprintln(w, "\tPUT:  /movies/{id}")
 	fmt.Fprintln(w, "\tDELETE:  /movies/{id}")
 	fmt.Fprintln(w, "")
 
@@ -32,6 +33,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /games?name={name}")
 	fmt.Fprintln(w, "\tPOST: /games")
 	fmt.Fprintln(w, "\tGET:  /games/{id}")
+	fmt.Fprintln(w, "\tPUT:  /games/{id}")
 	fmt.Fprintln(w, "\tDELETE:  /games/{id}")
 	fmt.Fprintln(w, "")
 
@@ -40,6 +42,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /shows?name={name}")
 	fmt.Fprintln(w, "\tPOST: /shows")
 	fmt.Fprintln(w, "\tGET:  /shows/{id}")
+	fmt.Fprintln(w, "\tPUT:  /shows/{id}")
 	fmt.Fprintln(w, "\tDELETE:  /shows/{id}")
 	fmt.Fprintln(w, "")
 
@@ -47,6 +50,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "\tGET:  /users")
 	fmt.Fprintln(w, "\tPOST: /users")
 	fmt.Fprintln(w, "\tGET:  /users/{uid}")
+	fmt.Fprintln(w, "\tPUT:  /users/{uid}")
 	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/movies")
 	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/games")
 	fmt.Fprintln(w, "\tGET:  /users/{uid}/feed/shows")
@@ -396,6 +400,11 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
+		return
+	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
 	if err != nil {
 		log.Printf("Error decoding date from json: %v\n", err)
@@ -437,6 +446,11 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error decoding game json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
 	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
@@ -481,6 +495,11 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error decoding show json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
 	}
 	d, err := time.Parse("2006-1-2", t.ReleaseDate)
@@ -1641,4 +1660,187 @@ func changeUserNameHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(u)
+}
+
+func updateMovieHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateMovieHandler")
+	vars := mux.Vars(r)
+	id := vars["id"]
+	decoder := json.NewDecoder(r.Body)
+
+	var t struct {
+		Id          int    `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		ImageUrl    string `json:"imageURL"`
+		ReleaseDate string `json:"releaseDate"`
+	}
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Printf("Error decoding movie json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	t.Id, _ = strconv.Atoi(id)
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
+		return
+	}
+
+	d, err := time.Parse("2006-1-2", t.ReleaseDate)
+	if err != nil {
+		log.Printf("Error decoding date from json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	m := movie{Name: strings.ToLower(t.Name), Description: t.Description, ImageUrl: t.ImageUrl, ReleaseDate: d, Id: t.Id}
+	query := "UPDATE movie SET name = $1, release_date = $2, description = $3, image_url = $4 WHERE id = $5"
+	c, err := db.Exec(context.Background(), query, m.Name, m.ReleaseDate, m.Description, m.ImageUrl, m.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if e, ok := err.(*pgconn.PgError); ok {
+			if e.Code == "23505" {
+				http.Error(w, "Repeting name", http.StatusBadRequest)
+			} else {
+				http.Error(w, "Error updating movie", http.StatusBadRequest)
+			}
+		} else {
+			http.Error(w, "Error updating movie", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "movie not found", http.StatusNotFound)
+		log.Printf("Error updating: movie with id %v \n", m.Id)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(m)
+}
+
+func updateGameHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateGameHandler")
+	vars := mux.Vars(r)
+	id := vars["id"]
+	decoder := json.NewDecoder(r.Body)
+
+	var t struct {
+		Id          int    `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		ImageUrl    string `json:"imageURL"`
+		ReleaseDate string `json:"releaseDate"`
+	}
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Printf("Error decoding game json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	t.Id, _ = strconv.Atoi(id)
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
+		return
+	}
+
+	d, err := time.Parse("2006-1-2", t.ReleaseDate)
+	if err != nil {
+		log.Printf("Error decoding date from json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	g := game{Name: strings.ToLower(t.Name), Description: t.Description, ImageUrl: t.ImageUrl, ReleaseDate: d, Id: t.Id}
+	query := "UPDATE game SET name = $1, release_date = $2, description = $3, image_url = $4 WHERE id = $5"
+	c, err := db.Exec(context.Background(), query, g.Name, g.ReleaseDate, g.Description, g.ImageUrl, g.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if e, ok := err.(*pgconn.PgError); ok {
+			if e.Code == "23505" {
+				http.Error(w, "Repeting name", http.StatusBadRequest)
+			} else {
+				http.Error(w, "Error updating game", http.StatusBadRequest)
+			}
+		} else {
+			http.Error(w, "Error updating game", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "game not found", http.StatusNotFound)
+		log.Printf("Error updating: game with id %v \n", g.Id)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(g)
+}
+
+
+func updateShowHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached updateShowHandler")
+	vars := mux.Vars(r)
+	id := vars["id"]
+	decoder := json.NewDecoder(r.Body)
+
+	var t struct {
+		Id          int    `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		ImageUrl    string `json:"imageURL"`
+		ReleaseDate string `json:"releaseDate"`
+	}
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Printf("Error decoding Show json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	t.Id, _ = strconv.Atoi(id)
+	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+		log.Printf("Error incomplete json: %v\n", err)
+		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
+		return
+	}
+
+	d, err := time.Parse("2006-1-2", t.ReleaseDate)
+	if err != nil {
+		log.Printf("Error decoding date from json: %v\n", err)
+		http.Error(w, "Unable to parse json", http.StatusBadRequest)
+		return
+	}
+
+	s := show{Name: strings.ToLower(t.Name), Description: t.Description, ImageUrl: t.ImageUrl, ReleaseDate: d, Id: t.Id}
+	query := "UPDATE show SET name = $1, release_date = $2, description = $3, image_url = $4 WHERE id = $5"
+	c, err := db.Exec(context.Background(), query, s.Name, s.ReleaseDate, s.Description, s.ImageUrl, s.Id)
+	if err != nil {
+		log.Printf("Error updating value: %T %v\n", err, err)
+		if e, ok := err.(*pgconn.PgError); ok {
+			if e.Code == "23505" {
+				http.Error(w, "Repeting name", http.StatusBadRequest)
+			} else {
+				http.Error(w, "Error updating show", http.StatusBadRequest)
+			}
+		} else {
+			http.Error(w, "Error updating game", http.StatusInternalServerError)
+
+		}
+		return
+	} else if c.RowsAffected() == 0 {
+		http.Error(w, "show not found", http.StatusNotFound)
+		log.Printf("Error updating: show with id %v \n", s.Id)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(s)
 }
