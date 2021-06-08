@@ -400,7 +400,7 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -448,7 +448,7 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -497,7 +497,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -691,6 +691,44 @@ func nameAdminQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	log.Print("User name Admin query succesfull")
+
+	var users []*user = make([]*user, 0)
+
+	for rows.Next() {
+		u := &user{}
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		users = append(users, u)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func nameFollowQueryUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached UserHandler")
+
+	vars := mux.Vars(r)
+	name := vars["name"]
+	uid := vars["uid"]
+
+
+	name = strings.ToLower(name)
+	query := "SELECT * FROM account WHERE name ~ $1 AND NOT id IN (SELECT following_id AS id from follow WHERE follower_id = $2)"
+	// query := "SELECT a.id, a.name, a.register_date, a.is_admin FROM follow f, account a WHERE a.id = f.following_id AND name ~ $1 AND a.id != $2 GROUP BY a.id"
+	// query := "SELECT a.id, a.name, a.register_date, a.is_admin FROM follow f, account a WHERE a.id = f.following_id AND name ~ $1 and f.follower_id != $2"
+	// query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE name ~ $1 AND u.is_admin = $2 ORDER BY u.register_date"
+	rows, err := db.Query(context.Background(), query, name, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("User name follow query succesfull")
 
 	var users []*user = make([]*user, 0)
 
@@ -1724,7 +1762,7 @@ func updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t.Id, _ = strconv.Atoi(id)
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -1785,7 +1823,7 @@ func updateGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t.Id, _ = strconv.Atoi(id)
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -1824,7 +1862,6 @@ func updateGameHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(g)
 }
 
-
 func updateShowHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached updateShowHandler")
 	vars := mux.Vars(r)
@@ -1846,7 +1883,7 @@ func updateShowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t.Id, _ = strconv.Atoi(id)
-	if(t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "") {
+	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
