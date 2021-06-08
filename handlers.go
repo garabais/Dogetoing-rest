@@ -395,12 +395,13 @@ func addMovieHandler(w http.ResponseWriter, r *http.Request) {
 		ReleaseDate string `json:"releaseDate"`
 	}
 	err := decoder.Decode(&t)
+	log.Println(t)
 	if err != nil {
 		log.Printf("Error decoding movie json: %v\n", err)
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
+	if t.Id != 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -448,7 +449,7 @@ func addGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
+	if t.Id != 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -497,7 +498,7 @@ func addShowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to parse json", http.StatusBadRequest)
 		return
 	}
-	if t.Id == 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
+	if t.Id != 0 || t.Name == "" || t.Description == "" || t.ImageUrl == "" || t.ReleaseDate == "" {
 		log.Printf("Error incomplete json: %v\n", err)
 		http.Error(w, "Unable incomplete json", http.StatusBadRequest)
 		return
@@ -534,7 +535,7 @@ func deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Delete Movie with id %v\n", id)
 
-	query := "DELETE FROM movie WHERE AND id = $1"
+	query := "DELETE FROM movie WHERE id = $1"
 	_, err := db.Exec(context.Background(), query, id)
 
 	if err != nil {
@@ -559,7 +560,7 @@ func deleteGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Delete game with id %v\n", id)
 
-	query := "DELETE FROM game WHERE AND id = $1"
+	query := "DELETE FROM game WHERE id = $1"
 	_, err := db.Exec(context.Background(), query, id)
 
 	if err != nil {
@@ -584,7 +585,7 @@ func deleteShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Delete show with id %v\n", id)
 
-	query := "DELETE FROM show WHERE AND id = $1"
+	query := "DELETE FROM show WHERE id = $1"
 	_, err := db.Exec(context.Background(), query, id)
 
 	if err != nil {
