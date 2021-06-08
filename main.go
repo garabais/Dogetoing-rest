@@ -62,6 +62,7 @@ func main() {
 	r.HandleFunc("/shows/{id:[0-9]+}", deleteShowHandler).Methods("DELETE")
 	r.HandleFunc("/shows/{id:[0-9]+}", updateShowHandler).Methods("PUT")
 
+	r.HandleFunc("/users", nameAdminQueryUserHandler).Queries("name", "{name}", "admin", "{admin}").Methods("GET")
 	r.HandleFunc("/users", nameQueryUserHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")

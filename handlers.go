@@ -649,7 +649,48 @@ func nameQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	log.Print("Movies query succesfull")
+	log.Print("User name query succesfull")
+
+	var users []*user = make([]*user, 0)
+
+	for rows.Next() {
+		u := &user{}
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		users = append(users, u)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func nameAdminQueryUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached UserHandler")
+
+	vars := mux.Vars(r)
+	name := vars["name"]
+	ad := vars["admin"]
+
+	var admin bool
+
+	if strings.ToLower(ad) == "true" {
+		admin = true
+	}
+
+	name = strings.ToLower(name)
+
+	query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE name ~ $1 AND u.is_admin = $2 ORDER BY u.register_date"
+	rows, err := db.Query(context.Background(), query, name, admin)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("User name Admin query succesfull")
 
 	var users []*user = make([]*user, 0)
 
