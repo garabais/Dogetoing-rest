@@ -997,13 +997,46 @@ func nameQueryUserShowsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(shows)
 }
 
-func UserFollowsHandler(w http.ResponseWriter, r *http.Request) {
+func userFollowsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and a.id = f.following_id"
 	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
 	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
 	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserShows query succesfull")
+
+	var follows []*follow = make([]*follow, 0)
+
+	for rows.Next() {
+		f := &follow{}
+		err = rows.Scan(&f.Follower, &f.Following, &f.Name)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		follows = append(follows, f)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(follows)
+}
+
+func nameUserFollowsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	name := vars["name"]
+
+	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and a.id = f.following_id and name ~ $2"
+	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
+	// query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.follower_id = $1"
+	rows, err := db.Query(context.Background(), query, uid, name)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserShowsHandler failed: %v\n", err)
 		http.Error(w, "Query failed", http.StatusInternalServerError)
