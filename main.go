@@ -101,7 +101,8 @@ func main() {
 	r.HandleFunc("/users/{uid}/follows/{id}", singleUserFollowHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/follows/{id}", deleteUserFollowHandler).Methods("DELETE")
 
-	r.HandleFunc("/users/{uid}/followers", UserFollowersHandler).Methods("GET")
+	r.HandleFunc("/users/{uid}/followers", nameUserFollowersHandler).Methods("GET").Queries("name", "{name}")
+	r.HandleFunc("/users/{uid}/followers", userFollowersHandler).Methods("GET")
 	r.HandleFunc("/users/{uid}/follows/{id}", singleUserFollowersHandler).Methods("GET")
 
 	r.HandleFunc("/admin", addAdminHandler).Methods("POST")

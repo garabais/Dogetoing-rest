@@ -1061,11 +1061,12 @@ func nameUserFollowsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(follows)
 }
 
-func UserFollowersHandler(w http.ResponseWriter, r *http.Request) {
+func userFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
-	query := "SELECT f.follower_id, f.following_id FROM follow f WHERE f.following_id = $1"
+	// query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and a.id = f.following_id"
+	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.following_id = $1 and a.id = follower_id"
 	rows, err := db.Query(context.Background(), query, uid)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserShowsHandler failed: %v\n", err)
@@ -1080,7 +1081,39 @@ func UserFollowersHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		f := &follow{}
-		err = rows.Scan(&f.Follower, &f.Following)
+		err = rows.Scan(&f.Follower, &f.Following, &f.Name)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		follows = append(follows, f)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(follows)
+}
+
+func nameUserFollowersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uid := vars["uid"]
+	name := vars["name"]
+
+	// query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.follower_id = $1 and a.id = f.following_id"
+	query := "SELECT f.follower_id, f.following_id, a.name FROM follow f, account a WHERE f.following_id = $1 and a.id = follower_id and name ~ $2"
+	rows, err := db.Query(context.Background(), query, uid, name)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserShowsHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("UserShows query succesfull")
+
+	var follows []*follow = make([]*follow, 0)
+
+	for rows.Next() {
+		f := &follow{}
+		err = rows.Scan(&f.Follower, &f.Following, &f.Name)
 		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 		}
