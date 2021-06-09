@@ -746,6 +746,44 @@ func nameFollowQueryUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
+
+func noFollowQueryUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Reached UserHandler")
+
+	vars := mux.Vars(r)
+	// name := vars["name"]
+	uid := vars["uid"]
+
+
+	query := "SELECT * FROM account WHERE NOT id IN (SELECT following_id AS id from follow WHERE follower_id = $1)"
+	// query := "SELECT a.id, a.name, a.register_date, a.is_admin FROM follow f, account a WHERE a.id = f.following_id AND name ~ $1 AND a.id != $2 GROUP BY a.id"
+	// query := "SELECT a.id, a.name, a.register_date, a.is_admin FROM follow f, account a WHERE a.id = f.following_id AND name ~ $1 and f.follower_id != $2"
+	// query := "SELECT u.id, u.name, u.register_date, u.is_admin FROM account u WHERE name ~ $1 AND u.is_admin = $2 ORDER BY u.register_date"
+	rows, err := db.Query(context.Background(), query, uid)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("Query in UserHandler failed: %v\n", err)
+		http.Error(w, "Query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	log.Print("User name follow query succesfull")
+
+	var users []*user = make([]*user, 0)
+
+	for rows.Next() {
+		u := &user{}
+		err = rows.Scan(&u.Id, &u.Name, &u.RegisterDate, &u.Admin)
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+		}
+		users = append(users, u)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
 func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Reached addUserHandler")
 	decoder := json.NewDecoder(r.Body)

@@ -64,6 +64,7 @@ func main() {
 
 	r.HandleFunc("/users", nameFollowQueryUserHandler).Queries("name", "{name}", "nf", "{uid}").Methods("GET")
 	r.HandleFunc("/users", nameAdminQueryUserHandler).Queries("name", "{name}", "admin", "{admin}").Methods("GET")
+	r.HandleFunc("/users", noFollowQueryUserHandler).Queries("nf", "{uid}").Methods("GET")
 	r.HandleFunc("/users", nameQueryUserHandler).Queries("name", "{name}").Methods("GET")
 	r.HandleFunc("/users", userHandler).Methods("GET")
 	r.HandleFunc("/users", addUserHandler).Methods("POST")
