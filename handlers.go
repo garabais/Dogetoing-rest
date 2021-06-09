@@ -805,7 +805,7 @@ func userMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
-	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 ORDER BY m.id"
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 ORDER BY r.score DESC"
 	rows, err := db.Query(context.Background(), query, uid)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserMovieHandler failed: %v\n", err)
@@ -837,7 +837,7 @@ func userGamesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
-	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 ORDER BY g.id"
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 ORDER BY g.score DESC"
 	rows, err := db.Query(context.Background(), query, uid)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserGamesHandler failed: %v\n", err)
@@ -869,7 +869,7 @@ func userShowsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid := vars["uid"]
 
-	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 ORDER BY s.id"
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 ORDER BY g.score DESC"
 	rows, err := db.Query(context.Background(), query, uid)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in UserShowsHandler failed: %v\n", err)
@@ -902,7 +902,7 @@ func nameQueryUserMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 	name := vars["name"]
 
-	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY m.id"
+	query := "SELECT m.id, m.name, m.description, m.image_url, m.release_date, r.score FROM movie m LEFT OUTER JOIN movie_review r ON (m.id = r.movie_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY r.score DESC"
 	rows, err := db.Query(context.Background(), query, uid, name)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in nameQueryUserMovieHandler failed: %v\n", err)
@@ -935,7 +935,8 @@ func nameQueryUserGamesHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 	name := vars["name"]
 
-	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY g.id"
+	query := "SELECT g.id, g.name, g.description, g.image_url, g.release_date, r.score FROM game g LEFT OUTER JOIN game_review r ON (g.id = r.game_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY g.score DESC"
+
 	rows, err := db.Query(context.Background(), query, uid, name)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in nameQueryUserGamesHandler failed: %v\n", err)
@@ -968,7 +969,7 @@ func nameQueryUserShowsHandler(w http.ResponseWriter, r *http.Request) {
 	uid := vars["uid"]
 	name := vars["name"]
 
-	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY s.id"
+	query := "SELECT s.id, s.name, s.description, s.image_url, s.release_date, r.score FROM show s LEFT OUTER JOIN show_review r ON (s.id = r.show_id) WHERE r.account_id = $1 AND name ~ $2 ORDER BY g.score DESC"
 	rows, err := db.Query(context.Background(), query, uid, name)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("Query in nameQueryUserShowsHandler failed: %v\n", err)
